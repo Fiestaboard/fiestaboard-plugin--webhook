@@ -1,0 +1,79 @@
+{
+  "id": "webhook",
+  "name": "Webhook Display",
+  "version": "0.1.0",
+  "description": "Display a custom message pushed to FiestaBoard via an HTTP webhook.",
+  "author": "FiestaBoard Team",
+  "icon": "webhook",
+  "category": "utility",
+  "repository": "https://github.com/Fiestaboard/fiestaboard-plugin--webhook",
+  "documentation": "README.md",
+  "min_refresh_seconds": 10,
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "enabled": {
+        "type": "boolean",
+        "title": "Enabled",
+        "default": false
+      },
+      "secret": {
+        "type": "string",
+        "title": "HMAC Secret",
+        "description": "Optional secret to verify incoming webhooks (leave blank to disable).",
+        "default": ""
+      },
+      "display_field": {
+        "type": "string",
+        "title": "Display Field",
+        "description": "JSON field name from the payload to display (e.g. message).",
+        "default": "message"
+      },
+      "default_message": {
+        "type": "string",
+        "title": "Default Message",
+        "description": "Message shown before any webhook is received.",
+        "default": "Waiting for webhook..."
+      },
+      "refresh_seconds": {
+        "type": "integer",
+        "title": "Refresh Interval (seconds)",
+        "description": "How often the board polls for new data.",
+        "default": 10,
+        "minimum": 5
+      }
+    },
+    "required": []
+  },
+  "variables": {
+    "groups": {
+      "payload": {
+        "label": "Webhook Payload"
+      }
+    },
+    "simple": {
+      "message": {
+        "description": "Value of the configured display field from the last payload",
+        "type": "string",
+        "max_length": 22,
+        "group": "payload",
+        "example": "Deploy success!"
+      },
+      "last_updated": {
+        "description": "When the last webhook was received",
+        "type": "string",
+        "max_length": 16,
+        "group": "payload",
+        "example": "2026-05-01 12:00"
+      }
+    }
+  },
+  "screenshots": [
+    {
+      "src": "docs/board-display.png",
+      "alt": "Webhook Display displayed on a Vestaboard",
+      "caption": "Example board output using the default template",
+      "primary": true
+    }
+  ]
+}
