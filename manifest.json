@@ -1,7 +1,7 @@
 {
   "id": "webhook",
   "name": "Webhook Display",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Display a custom message pushed to FiestaBoard via an HTTP webhook.",
   "author": "FiestaBoard Team",
   "icon": "webhook",
@@ -75,5 +75,49 @@
       "caption": "Example board output using the default template",
       "primary": true
     }
-  ]
+  ],
+  "demo": {
+    "name": "Webhook Display Demo",
+    "device_type": "flagship",
+    "config": {
+      "enabled": true,
+      "display_field": "message",
+      "default_message": "Waiting for webhook...",
+      "refresh_seconds": 10
+    },
+    "template": [
+      "Webhook Display",
+      "",
+      "Message:",
+      "{{webhook.message}}",
+      "",
+      "{{webhook.last_updated}}"
+    ],
+    "line_metadata": [
+      {
+        "alignment": "center",
+        "wrap": false
+      },
+      {
+        "alignment": "left",
+        "wrap": false
+      },
+      {
+        "alignment": "left",
+        "wrap": false
+      },
+      {
+        "alignment": "left",
+        "wrap": false
+      },
+      {
+        "alignment": "left",
+        "wrap": false
+      },
+      {
+        "alignment": "left",
+        "wrap": false
+      }
+    ]
+  }
 }
