@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
 from pathlib import Path
-from unittest.mock import patch, Mock
 
 import pytest
 
@@ -55,13 +56,6 @@ MANIFEST = json.loads("""
 }
 """)
 
-SAMPLE_RESPONSE = json.loads("""
-{
-    "message": "Deploy success!",
-    "timestamp": "2026-05-01T12:00:00Z"
-}
-""")
-
 
 @pytest.fixture
 def plugin():
@@ -92,26 +86,69 @@ class TestWebhookPlugin:
         for field in ("id", "name", "version"):
             assert field in m
 
-    @patch("plugins.webhook.requests.get")
-    def test_fetch_data_success(self, mock_get, configured_plugin):
-        mock_response = Mock()
-        mock_response.json.return_value = SAMPLE_RESPONSE
-        mock_response.raise_for_status = Mock()
-        mock_get.return_value = mock_response
-
+    def test_fetch_data_returns_default_before_receive(self, configured_plugin):
         result = configured_plugin.fetch_data()
 
         assert result.available is True
         assert result.error is None
         assert result.data is not None
-        assert "message" in result.data, "missing variable: message"
-        assert "last_updated" in result.data, "missing variable: last_updated"
+        assert result.data["message"] == "Waiting for webhook..."
+        assert result.data["last_updated"] == "Never"
 
-    @pytest.mark.skip(reason="plugin does not use requests.get")
-    def test_fetch_data_network_error(self, configured_plugin):
-        pass
+    def test_fetch_data_after_receive(self, configured_plugin):
+        configured_plugin.receive_payload({"message": "Deploy success!"}, {})
 
-    @pytest.mark.skip(reason="plugin does not use requests.get")
-    def test_fetch_data_bad_json(self, configured_plugin):
-        pass
+        result = configured_plugin.fetch_data()
 
+        assert result.available is True
+        assert result.data["message"] == "Deploy success!"
+        assert result.data["last_updated"] != "Never"
+
+    def test_receive_payload_custom_display_field(self, plugin):
+        plugin.config = {"display_field": "status"}
+        plugin.receive_payload({"status": "OK", "message": "ignored"}, {})
+
+        result = plugin.fetch_data()
+
+        assert result.data["message"] == "OK"
+
+    def test_receive_payload_truncates_to_22_chars(self, configured_plugin):
+        configured_plugin.receive_payload({"message": "A" * 30}, {})
+
+        result = configured_plugin.fetch_data()
+
+        assert len(result.data["message"]) == 22
+
+    def test_receive_payload_hmac_valid(self, plugin):
+        secret = "mysecret"
+        plugin.config = {"secret": secret, "display_field": "message"}
+        raw_body = b'{"message":"hello"}'
+        sig = "sha256=" + hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()
+
+        plugin.receive_payload({"message": "hello"}, {"x-webhook-signature": sig}, raw_body=raw_body)
+
+        assert plugin.fetch_data().data["message"] == "hello"
+
+    def test_receive_payload_hmac_invalid_raises(self, plugin):
+        plugin.config = {"secret": "correct", "display_field": "message"}
+        raw_body = b'{"message":"hello"}'
+
+        with pytest.raises(PermissionError):
+            plugin.receive_payload(
+                {"message": "hello"},
+                {"x-webhook-signature": "sha256=badhash"},
+                raw_body=raw_body,
+            )
+
+    def test_receive_payload_hmac_missing_raises(self, plugin):
+        plugin.config = {"secret": "mysecret", "display_field": "message"}
+
+        with pytest.raises(PermissionError):
+            plugin.receive_payload({"message": "hello"}, {})
+
+    def test_receive_payload_no_secret_skips_verification(self, plugin):
+        plugin.config = {"secret": "", "display_field": "message"}
+
+        plugin.receive_payload({"message": "hello"}, {})
+
+        assert plugin.fetch_data().data["message"] == "hello"

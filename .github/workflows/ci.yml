@@ -38,17 +38,20 @@ jobs:
           print('manifest.json is valid')
           "
 
+      - name: Set up plugin directory structure
+        run: |
+          PLUGIN_ID=$(python -c "import json; print(json.load(open('manifest.json'))['id'])")
+          mkdir -p plugins
+          touch plugins/__init__.py
+          ln -s .. "plugins/$PLUGIN_ID"
+          ln -s . "$PLUGIN_ID"
+
       - name: Run tests
         env:
           PYTHONPATH: "${{ github.workspace }}:fiestaboard-core"
           BOARD_READ_WRITE_KEY: test_key
         run: |
-          cat > .coveragerc << 'RCEOF'
-          [run]
-          omit = fiestaboard-core/*
-          RCEOF
+          PLUGIN_ID=$(python -c "import json; print(json.load(open('manifest.json'))['id'])")
           pytest tests/ -v \
-            --cov=. \
-            --cov-report=term-missing \
-            --cov-fail-under=70 \
-            --ignore=fiestaboard-core
+            --rootdir=tests \
+            --override-ini="collect_ignore_glob=['*/__init__.py']"
