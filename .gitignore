@@ -25,3 +25,7 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# CI-generated symlinks (created by the "Set up plugin directory structure" step)
+plugins/
+webhook
