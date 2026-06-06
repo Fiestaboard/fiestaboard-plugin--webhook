@@ -49,7 +49,7 @@ class WebhookPlugin(PluginBase):
             display_field = self.config.get("display_field") or "message"
             default_message = self.config.get("default_message") or "Waiting for webhook..."
 
-            message = str(self._payload.get(display_field, default_message))[:22]
+            message = str(self._payload.get(display_field, default_message))
             last_updated = self._last_updated or "Never"
 
             return PluginResult(

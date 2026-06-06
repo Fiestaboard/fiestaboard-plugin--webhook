@@ -112,12 +112,13 @@ class TestWebhookPlugin:
 
         assert result.data["message"] == "OK"
 
-    def test_receive_payload_truncates_to_22_chars(self, configured_plugin):
+    def test_receive_payload_preserves_full_message(self, configured_plugin):
         configured_plugin.receive_payload({"message": "A" * 30}, {})
 
         result = configured_plugin.fetch_data()
 
-        assert len(result.data["message"]) == 22
+        assert result.data["message"] == "A" * 30
+        assert len(result.data["message"]) == 30
 
     def test_receive_payload_hmac_valid(self, plugin):
         secret = "mysecret"
