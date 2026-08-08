@@ -92,8 +92,9 @@
     {
       "device_type": "note",
       "rows": [
-        "WEBHOOK",
-        "Deploy success!"
+        "{66}{66} WEBHOOK",
+        "DEPLOY SUCCESS!",
+        "AT 12:00"
       ]
     }
   ],
