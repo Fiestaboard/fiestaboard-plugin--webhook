@@ -76,6 +76,28 @@
       "primary": true
     }
   ],
+  "teaser": "DEPLOY SUCCESS!",
+  "previews": [
+    {
+      "device_type": "flagship",
+      "rows": [
+        "   Webhook Display",
+        "",
+        "Message:",
+        "Deploy success!",
+        "",
+        "2026-05-01 12:00"
+      ]
+    },
+    {
+      "device_type": "note",
+      "rows": [
+        "{66}{66} WEBHOOK",
+        "DEPLOY SUCCESS!",
+        "AT 12:00"
+      ]
+    }
+  ],
   "demo": {
     "flagship": {
       "name": "Webhook Display Demo",
